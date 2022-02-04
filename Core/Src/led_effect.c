@@ -17,15 +17,15 @@ static void led_control(int value);
 
 void led_effect_stop(void)
 {
-	for(int i = 0; i < 3; i++)
+	for (int i = 0; i < 3; i++)
 		xTimerStop(handle_led_timer[i], portMAX_DELAY);
 }
 
 void led_effect_start(int n)
 {
-	assert(n >= 0 && n <4);
+	assert(n >= 0 && n < 4);
 	led_effect_stop();
-	if(xTimerStart(handle_led_timer[n], portMAX_DELAY) != pdPASS)
+	if (xTimerStart(handle_led_timer[n], portMAX_DELAY) != pdPASS)
 	{
 		printf("Timer for LED %d failed to start\n", n);
 		Error_Handler();
@@ -61,21 +61,21 @@ void led_turn_on_even(void)
 	HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
 }
 
-void led_control(int value){
-	for(int i = 0; i < 3; i++)
-		HAL_GPIO_WritePin(LD3_GPIO_Port, (LD1_Pin + i * 7), ((value >> i)& 0x1));
+void led_control(int value) {
+	for (int i = 0; i < 3; i++)
+		HAL_GPIO_WritePin(LD3_GPIO_Port, (LD1_Pin + i * 7), ((value >> i) & 0x1));
 }
 
 void led_effect_1(void)
 {
 	static int flag = 1;
-	(flag^=1) ? led_turn_off_all() : led_turn_on_all();
+	(flag ^= 1) ? led_turn_off_all() : led_turn_on_all();
 }
 
 void led_effect_2(void)
 {
 	static int flag = 1;
-	(flag^=1) ? led_turn_on_even() : led_turn_on_odd();
+	(flag ^= 1) ? led_turn_on_even() : led_turn_on_odd();
 }
 
 void led_effect_3(void)

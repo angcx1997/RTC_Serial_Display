@@ -29,7 +29,11 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+typedef struct
+{
+	uint8_t payload[10];
+	uint32_t len;
+}command_t;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -45,6 +49,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 
+
 /* USER CODE END Variables */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -54,6 +59,32 @@
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+void Task_Menu(void *argument)
+{
+	uint32_t cmd_addr;
+	command_t *cmd;
 
+	int option;
+	const char* msg_menu = 	"\n"
+							"========================\n"
+							"|         Menu         |\n"
+							"========================\n"
+							"LED effect    -------> 0\n"
+							"Date and time -------> 1\n"
+							"Exit          -------> 2\n"
+							"Enter your choice here : ";
+
+	while(1)
+	{
+		if(xQueueSend(queue_print, &msg_menu, portMAX_DELAY) != pdPASS)
+		{
+			printf("Fail to send msg menu queue");
+		}
+
+
+
+
+	}
+}
 /* USER CODE END Application */
 

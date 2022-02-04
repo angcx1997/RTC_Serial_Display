@@ -58,6 +58,13 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void Task_Menu(void *argument);
+void Task_Led(void *argument);
+void Task_Print(void *argument);
+void Task_RTC(void* argument);
+void Task_Command(void *argument);
+
+
 
 /* USER CODE END EFP */
 
