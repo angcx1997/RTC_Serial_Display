@@ -36,17 +36,30 @@ extern "C" {
 #include "task.h"
 #include "timers.h"
 #include "queue.h"
-
+#include "led_effect.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+typedef struct
+{
+	uint8_t payload[10];
+	uint32_t len;
+}command_t;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+typedef enum
+{
+	sMainMenu = 0,
+	sLedEffect,
+	sRtcMenu,
+	sRtcTimeConfig,
+	sRtcDateConfig,
+	sRtcReport,
+}state_t;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

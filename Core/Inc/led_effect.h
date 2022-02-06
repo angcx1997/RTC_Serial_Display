@@ -10,7 +10,7 @@
 
 #include "main.h"
 
-extern TimerHandle_t handle_led_timer[4];
+extern TimerHandle_t timer_led[4];
 
 /**
  * @brief Stop all led effect

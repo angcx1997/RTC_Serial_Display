@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "led_effect.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,6 +67,10 @@ QueueHandle_t queue_data;
 //software timer handles
 TimerHandle_t timer_led[4];
 TimerHandle_t timer_rtc;
+
+state_t curr_state;
+
+volatile uint8_t user_ser_input;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -119,6 +123,7 @@ int main(void) {
 	MX_USART3_UART_Init();
 	/* USER CODE BEGIN 2 */
 
+	HAL_UART_Receive_IT(&huart3, (uint8_t*)&user_ser_input, 1);
 	/* USER CODE END 2 */
 
 	/* Init scheduler */
@@ -459,6 +464,36 @@ void led_effect_callback(TimerHandle_t xTimer) {
 		break;
 	}
 
+}
+
+void rtc_timer_callback(TimerHandle_t xTimer){
+
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	uint8_t dummy;
+
+	if(!xQueueIsQueueFullFromISR(queue_data))
+	{
+		//Enqueue data type
+		xQueueSendFromISR(queue_data, (void*)&user_ser_input,NULL);
+	}
+	else
+	{
+		if(user_ser_input == '\n')
+		{
+			//Make sure that last data byte of the queue is '\n'
+			xQueueReceiveFromISR(queue_data, (void*)&dummy, NULL);
+			xQueueSendFromISR(queue_data, (void*)&user_ser_input, NULL);
+		}
+	}
+
+	//send notification to command handling task if user_data = '\n'
+	if (user_ser_input == '\n')
+		xTaskNotifyFromISR(task_command, 0, eNoAction, NULL);
+
+	HAL_UART_Receive_IT(&huart3, (uint8_t*)&user_ser_input,	1);
 }
 /* USER CODE END 4 */
 

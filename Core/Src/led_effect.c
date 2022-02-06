@@ -18,14 +18,14 @@ static void led_control(int value);
 void led_effect_stop(void)
 {
 	for (int i = 0; i < 3; i++)
-		xTimerStop(handle_led_timer[i], portMAX_DELAY);
+		xTimerStop(timer_led[i], portMAX_DELAY);
 }
 
 void led_effect_start(int n)
 {
 	assert(n >= 0 && n < 4);
 	led_effect_stop();
-	if (xTimerStart(handle_led_timer[n], portMAX_DELAY) != pdPASS)
+	if (xTimerStart(timer_led[n], portMAX_DELAY) != pdPASS)
 	{
 		printf("Timer for LED %d failed to start\n", n);
 		Error_Handler();
