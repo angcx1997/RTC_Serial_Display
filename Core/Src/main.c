@@ -139,7 +139,7 @@ int main(void) {
 
 	/* USER CODE BEGIN RTOS_TIMERS */
 	for (int i = 0; i < 4; i++) {
-		timer_led[i] = xTimerCreate("LED Timer", pdMS_TO_TICKS(500), pdTRUE, (void*) i, led_effect_callback);
+		timer_led[i] = xTimerCreate("LED Timer", pdMS_TO_TICKS(500), pdTRUE, (void*) i+1, led_effect_callback);
 		configASSERT(timer_led[i] != NULL);
 	}
 

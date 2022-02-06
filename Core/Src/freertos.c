@@ -34,7 +34,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define SERIAL_UART huart3
+#define SERIAL_UART USART3
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,6 +53,7 @@ extern TaskHandle_t task_menu;
 extern QueueHandle_t queue_print;
 extern QueueHandle_t queue_data;
 
+extern UART_HandleTypeDef huart3;
 //software timer handles
 extern TimerHandle_t timer_led[4];
 extern TimerHandle_t timer_rtc;
@@ -64,7 +65,8 @@ const char *msg_inv = "////Invalid option////\n";
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
+static void process_command(command_t* cmd);
+static int extract_command(command_t* cmd);
 /* USER CODE END FunctionPrototypes */
 
 /* Private application code --------------------------------------------------*/
@@ -180,9 +182,9 @@ void Task_Print(void *argument)
 	while(1)
 	{
 		xQueueReceive(queue_print, &msg, portMAX_DELAY);
-		if (HAL_UART_Transmit(&SERIAL_UART, (uint8_t*) msg, strlen((char*)msg), HAL_MAX_DELAY) != HAL_OK)
+		if (HAL_UART_Transmit(&huart3, (uint8_t*) msg, strlen((char*)msg), HAL_MAX_DELAY) != HAL_OK)
 		{
-			Error_Handler();
+//			Error_Handler();
 		}
 	}
 }
@@ -190,11 +192,66 @@ void Task_Print(void *argument)
 
 void Task_RTC(void* argument)
 {
+	while(1)
+	{
 
+	}
 }
 void Task_Command(void *argument)
 {
+	BaseType_t flag;
+	command_t cmd;
 
+	while(1)
+	{
+		flag = xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+
+		if (flag == pdTRUE)
+			//process user input command and store in data queue
+			process_command(&cmd);
+	}
+}
+
+void process_command(command_t* cmd)
+{
+	extract_command(cmd);
+	switch (curr_state) {
+		case sMainMenu:
+			xTaskNotify(task_menu, (uint32_t) cmd, eSetValueWithOverwrite);
+			break;
+		case sLedEffect:
+			xTaskNotify(task_led, (uint32_t) cmd, eSetValueWithOverwrite);
+			break;
+		case sRtcMenu:
+		case sRtcReport:
+		case sRtcDateConfig:
+		case sRtcTimeConfig:
+			xTaskNotify(task_rtc, (uint32_t) cmd, eSetValueWithOverwrite);
+			break;
+	}
+}
+
+int extract_command(command_t* cmd)
+{
+	uint8_t item;
+	BaseType_t status;
+
+	//Check if any message in the queue
+	status = uxQueueMessagesWaiting(queue_data);
+	if(status == 0) return -1;
+
+	uint8_t i = 0;
+
+	do
+	{
+		status = xQueueReceive(queue_data, &item, 0);
+		if (status == pdTRUE) cmd->payload[i++] = item;
+	}while(item != '\n');
+
+	cmd->payload[i-1] = '\0'; //replace \n with null character
+	cmd->len = i-1; //save length of command excluding null
+
+	return 0;
 }
 /* USER CODE END Application */
 

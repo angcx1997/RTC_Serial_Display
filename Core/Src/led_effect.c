@@ -63,7 +63,7 @@ void led_turn_on_even(void)
 
 void led_control(int value) {
 	for (int i = 0; i < 3; i++)
-		HAL_GPIO_WritePin(LD3_GPIO_Port, (LD1_Pin + i * 7), ((value >> i) & 0x1));
+		HAL_GPIO_WritePin(LD3_GPIO_Port, (LD1_Pin * pow(0x80, i)), ((value >> i) & 0x1));
 }
 
 void led_effect_1(void)
