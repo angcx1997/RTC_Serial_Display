@@ -184,7 +184,7 @@ void Task_Print(void *argument)
 		xQueueReceive(queue_print, &msg, portMAX_DELAY);
 		if (HAL_UART_Transmit(&huart3, (uint8_t*) msg, strlen((char*)msg), HAL_MAX_DELAY) != HAL_OK)
 		{
-//			Error_Handler();
+			Error_Handler();
 		}
 	}
 }
