@@ -467,7 +467,7 @@ void led_effect_callback(TimerHandle_t xTimer) {
 }
 
 void rtc_timer_callback(TimerHandle_t xTimer){
-
+	rtc_show_time_date_itm();
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
