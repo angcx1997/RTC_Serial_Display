@@ -39,6 +39,7 @@ extern "C" {
 #include "led_effect.h"
 #include "string.h"
 #include "math.h"
+#include "rtc.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
