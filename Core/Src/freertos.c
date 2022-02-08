@@ -215,17 +215,17 @@ void Task_RTC(void* argument)
 							"Enable reporting ----> 2\n"
 							"Exit             ----> 3\n"
 							"Enter your choice here : ";
-	const char *msg_rtc_hh = "Enter hour(1-12):";
-	const char *msg_rtc_mm = "Enter minutes(0-59):";
-	const char *msg_rtc_ss = "Enter seconds(0-59):";
+	const char *msg_rtc_hh = "\nEnter hour(1-12):";
+	const char *msg_rtc_mm = "\nEnter minutes(0-59):";
+	const char *msg_rtc_ss = "\nEnter seconds(0-59):";
 
-	const char *msg_rtc_dd  = "Enter date(1-31):";
-	const char *msg_rtc_mo  ="Enter month(1-12):";
-	const char *msg_rtc_dow  = "Enter day(1-7 sun:1):";
-	const char *msg_rtc_yr  = "Enter year(0-99):";
+	const char *msg_rtc_dd  = 	"\nEnter date(1-31):";
+	const char *msg_rtc_mo  =	"\nEnter month(1-12):";
+	const char *msg_rtc_dow  = 	"\nEnter day(1-7 sun:1):";
+	const char *msg_rtc_yr  = 	"\nEnter year(0-99):";
 
-	const char *msg_conf = "Configuration successful\n";
-	const char *msg_rtc_report = "Enable time&date reporting(y/n)?: ";
+	const char *msg_conf = "\nConfiguration successful\n";
+	const char *msg_rtc_report = "\nEnable time&date reporting(y/n)?: ";
 
 	uint32_t cmd_addr;
 	command_t *cmd;
@@ -350,7 +350,6 @@ void Task_RTC(void* argument)
 						case YEAR_CONFIG:{
 							uint8_t year = char2int(cmd->payload, cmd->len);
 							date.Year = year;
-							break;
 							if (!rtc_validate(NULL, &date))
 							{
 								rtc_configure_date(&date);
@@ -452,7 +451,7 @@ static uint8_t char2int(uint8_t *p, int len)
 {
 	int value;
 	if (len > 1)
-		value = ((p[0] - 48 * 10) + (p[1] - 48));
+		value = (((p[0] - 48) * 10) + (p[1] - 48));
 	else
 		value = p[0] - 48;
 	return value;
