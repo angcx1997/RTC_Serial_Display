@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * File Name          : freertos.c
-  * Description        : Code for freertos applications
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2022 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * File Name          : freertos.c
+ * Description        : Code for freertos applications
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2022 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -29,18 +29,18 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef enum{
+typedef enum {
 	HH_CONFIG,
 	MM_CONFIG,
 	SS_CONFIG,
-}time_config;
+} time_config;
 
-typedef enum{
+typedef enum {
 	DATE_CONFIG,
 	MONTH_CONFIG,
 	YEAR_CONFIG,
 	DAY_CONFIG,
-}date_config;
+} date_config;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -76,10 +76,31 @@ const char *msg_inv = "////Invalid option////\n";
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-static void process_command(command_t* cmd);
-static int extract_command(command_t* cmd);
+static void process_command(command_t *cmd);
+static int extract_command(command_t *cmd);
 static uint8_t char2int(uint8_t *p, int len);
 /* USER CODE END FunctionPrototypes */
+
+/* Hook prototypes */
+void vApplicationIdleHook(void);
+
+/* USER CODE BEGIN 2 */
+void vApplicationIdleHook(void)
+{
+	/* vApplicationIdleHook() will only be called if configUSE_IDLE_HOOK is set
+	 to 1 in FreeRTOSConfig.h. It will be called on each iteration of the idle
+	 task. It is essential that code added to this hook function never attempts
+	 to block in any way (for example, call xQueueReceive() with a block time
+	 specified, or call vTaskDelay()). If the application makes use of the
+	 vTaskDelete() API function (as this demo application does) then it is also
+	 important that vApplicationIdleHook() is permitted to return to its calling
+	 function, because it is the responsibility of the idle task to clean up
+	 memory allocated by the kernel to any task that has since been deleted. */
+
+	//send the cpu to normal sleep
+	__WFI();
+}
+/* USER CODE END 2 */
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
@@ -89,29 +110,29 @@ void Task_Menu(void *argument)
 	command_t *cmd;
 
 	int option;
-	const char* msg_menu = 	"\n"
-							"========================\n"
-							"|         Menu         |\n"
-							"========================\n"
-							"LED effect    -------> 0\n"
-							"Date and time -------> 1\n"
-							"Exit          -------> 2\n"
-							"Enter your choice here : ";
+	const char *msg_menu = "\n"
+			"========================\n"
+			"|         Menu         |\n"
+			"========================\n"
+			"LED effect    -------> 0\n"
+			"Date and time -------> 1\n"
+			"Exit          -------> 2\n"
+			"Enter your choice here : ";
 
-	while(1)
+	while (1)
 	{
-		if(xQueueSend(queue_print, &msg_menu, portMAX_DELAY) != pdPASS)
+		if (xQueueSend(queue_print, &msg_menu, portMAX_DELAY) != pdPASS)
 		{
 			printf("Fail to send msg menu queue");
 		}
 
 		//Wait for user input menu command
 		xTaskNotifyWait(0, 0, &cmd_addr, portMAX_DELAY);
-		cmd = (command_t*)cmd_addr;
+		cmd = (command_t*) cmd_addr;
 		if (cmd->len == 1)
-		{
+				{
 			option = cmd->payload[0] - 48;
-			switch(option)
+			switch (option)
 			{
 			case 0:
 				curr_state = sLedEffect;
@@ -129,7 +150,7 @@ void Task_Menu(void *argument)
 				continue;
 			}
 		}
-		else{
+		else {
 			//Invalid entry
 			xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
 			continue;
@@ -144,35 +165,35 @@ void Task_Led(void *argument)
 {
 	uint32_t cmd_addr;
 	command_t *cmd;
-	const char* msg_led =	"\n"
-							"========================\n"
-							"|      LED Effect     |\n"
-							"========================\n"
-							"(none,e1,e2,e3,e4)\n"
-							"Enter your choice here : ";
+	const char *msg_led = "\n"
+			"========================\n"
+			"|      LED Effect     |\n"
+			"========================\n"
+			"(none,e1,e2,e3,e4)\n"
+			"Enter your choice here : ";
 
-	while(1)
+	while (1)
 	{
 		//Wait for notification(notify wait)
 		xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
 		//Print LED menu
-		xQueueSend(queue_print,&msg_led,portMAX_DELAY);
+		xQueueSend(queue_print, &msg_led, portMAX_DELAY);
 
 		//wait for led command
 		xTaskNotifyWait(0, 0, &cmd_addr, portMAX_DELAY);
 		cmd = (command_t*) cmd_addr;
 
-		if(cmd->len <= 4)
-		{
-			if (!strcmp((char*)cmd->payload, "none"))
+		if (cmd->len <= 4)
+				{
+			if (!strcmp((char*) cmd->payload, "none"))
 				led_effect_stop();
-			else if (!strcmp((char*)cmd->payload, "e1"))
+			else if (!strcmp((char*) cmd->payload, "e1"))
 				led_effect_start(0);
-			else if (!strcmp((char*)cmd->payload, "e2"))
+			else if (!strcmp((char*) cmd->payload, "e2"))
 				led_effect_start(1);
-			else if (!strcmp((char*)cmd->payload, "e3"))
+			else if (!strcmp((char*) cmd->payload, "e3"))
 				led_effect_start(2);
-			else if (!strcmp((char*)cmd->payload, "e4"))
+			else if (!strcmp((char*) cmd->payload, "e4"))
 				led_effect_start(3);
 			else
 				xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
@@ -190,39 +211,38 @@ void Task_Led(void *argument)
 }
 void Task_Print(void *argument)
 {
-	uint32_t* msg;
-	while(1)
+	uint32_t *msg;
+	while (1)
 	{
 		xQueueReceive(queue_print, &msg, portMAX_DELAY);
-		if (HAL_UART_Transmit(&huart3, (uint8_t*) msg, strlen((char*)msg), HAL_MAX_DELAY) != HAL_OK)
-		{
+		if (HAL_UART_Transmit(&huart3, (uint8_t*) msg, strlen((char*) msg), HAL_MAX_DELAY) != HAL_OK)
+				{
 			Error_Handler();
 		}
 	}
 }
 
-
-void Task_RTC(void* argument)
+void Task_RTC(void *argument)
 {
-	const char* msg_rtc1 = 	"\n"
-							"========================\n"
-							"|         RTC          |\n"
-							"========================\n";
+	const char *msg_rtc1 = "\n"
+			"========================\n"
+			"|         RTC          |\n"
+			"========================\n";
 
-	const char* msg_rtc2 = 	"\n"
-							"Configure Time   ----> 0\n"
-							"Configure Date   ----> 1\n"
-							"Enable reporting ----> 2\n"
-							"Exit             ----> 3\n"
-							"Enter your choice here : ";
+	const char *msg_rtc2 = "\n"
+			"Configure Time   ----> 0\n"
+			"Configure Date   ----> 1\n"
+			"Enable reporting ----> 2\n"
+			"Exit             ----> 3\n"
+			"Enter your choice here : ";
 	const char *msg_rtc_hh = "\nEnter hour(1-12):";
 	const char *msg_rtc_mm = "\nEnter minutes(0-59):";
 	const char *msg_rtc_ss = "\nEnter seconds(0-59):";
 
-	const char *msg_rtc_dd  = 	"\nEnter date(1-31):";
-	const char *msg_rtc_mo  =	"\nEnter month(1-12):";
-	const char *msg_rtc_dow  = 	"\nEnter day(1-7 sun:1):";
-	const char *msg_rtc_yr  = 	"\nEnter year(0-99):";
+	const char *msg_rtc_dd = "\nEnter date(1-31):";
+	const char *msg_rtc_mo = "\nEnter month(1-12):";
+	const char *msg_rtc_dow = "\nEnter day(1-7 sun:1):";
+	const char *msg_rtc_yr = "\nEnter year(0-99):";
 
 	const char *msg_conf = "\nConfiguration successful\n";
 	const char *msg_rtc_report = "\nEnable time&date reporting(y/n)?: ";
@@ -236,7 +256,7 @@ void Task_RTC(void* argument)
 	RTC_TimeTypeDef time;
 	RTC_DateTypeDef date;
 
-	while(1)
+	while (1)
 	{
 		//Wait until notify
 		xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
@@ -246,146 +266,146 @@ void Task_RTC(void* argument)
 		rtc_show_time_date_serial();
 		xQueueSend(queue_print, &msg_rtc2, portMAX_DELAY);
 
-		while(curr_state != sMainMenu)
+		while (curr_state != sMainMenu)
 		{
 			xTaskNotifyWait(0, 0, &cmd_addr, portMAX_DELAY);
 			cmd = (command_t*) cmd_addr;
 
-			switch(curr_state)
+			switch (curr_state)
 			{
-				case sRtcMenu:{
-					if(cmd->len == 1)
-					{
-						menu_code = cmd->payload[0] - 48;
-						switch(menu_code)
+			case sRtcMenu: {
+				if (cmd->len == 1)
 						{
-						case 0:
-							curr_state = sRtcTimeConfig;
-							xQueueSend(queue_print, &msg_rtc_hh, portMAX_DELAY);
-							break;
-						case 1:
-							curr_state = sRtcDateConfig;
-							xQueueSend(queue_print, &msg_rtc_dd, portMAX_DELAY);
-							break;
-						case 2:
-							curr_state = sRtcReport;
-							xQueueSend(queue_print, &msg_rtc_report, portMAX_DELAY);
-							break;
-						case 3:
-							curr_state = sMainMenu;
-							break;
-						default:
-							curr_state = sMainMenu;
-							xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
-						}
-					}
-					else
+					menu_code = cmd->payload[0] - 48;
+					switch (menu_code)
 					{
+					case 0:
+						curr_state = sRtcTimeConfig;
+						xQueueSend(queue_print, &msg_rtc_hh, portMAX_DELAY);
+						break;
+					case 1:
+						curr_state = sRtcDateConfig;
+						xQueueSend(queue_print, &msg_rtc_dd, portMAX_DELAY);
+						break;
+					case 2:
+						curr_state = sRtcReport;
+						xQueueSend(queue_print, &msg_rtc_report, portMAX_DELAY);
+						break;
+					case 3:
+						curr_state = sMainMenu;
+						break;
+					default:
 						curr_state = sMainMenu;
 						xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
 					}
-					break;
 				}
-				case sRtcTimeConfig:{
-					/*get hh, mm, ss infor and configure RTC */
-					/*take care of invalid entries */
-					switch(rtc_state)
-					{
-						case HH_CONFIG:{
-							uint8_t hour = char2int(cmd->payload, cmd->len);
-							time.Hours = hour;
-							rtc_state = MM_CONFIG;
-							xQueueSend(queue_print, &msg_rtc_mm, portMAX_DELAY);
-							break;
-						}
-						case MM_CONFIG:{
-							uint8_t min = char2int(cmd->payload, cmd->len);
-							time.Minutes = min;
-							rtc_state = SS_CONFIG;
-							xQueueSend(queue_print, &msg_rtc_ss, portMAX_DELAY);
-							break;
-						}
-						case SS_CONFIG:{
-							uint8_t sec = char2int(cmd->payload, cmd->len);
-							time.Seconds = sec;
-							if (!rtc_validate(&time, NULL))
-							{
-								rtc_configure_time(&time);
-								xQueueSend(queue_print, &msg_conf, portMAX_DELAY);
-								rtc_show_time_date_serial();
-							}else
-								xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
-							curr_state = sMainMenu;
-							rtc_state = 0;
-							break;
-						}
-					}
-					break;
-				}
-				case sRtcDateConfig:{
-					/*get date, month, day , year info and configure RTC */
-					/*take care of invalid entries */
-					switch (rtc_state) {
-						case DATE_CONFIG:{
-							uint8_t d = char2int(cmd->payload, cmd->len);
-							date.Date = d;
-							rtc_state = MONTH_CONFIG;
-							xQueueSend(queue_print, &msg_rtc_mo, portMAX_DELAY);
-							break;
-						}
-						case MONTH_CONFIG:{
-							uint8_t month = char2int(cmd->payload, cmd->len);
-							date.Month = month;
-							rtc_state = DAY_CONFIG;
-							xQueueSend(queue_print, &msg_rtc_dow, portMAX_DELAY);
-							break;
-						}
-						case DAY_CONFIG:{
-							uint8_t day = char2int(cmd->payload, cmd->len);
-							date.WeekDay = day;
-							rtc_state = YEAR_CONFIG;
-							xQueueSend(queue_print, &msg_rtc_yr, portMAX_DELAY);
-							break;
-						}
-						case YEAR_CONFIG:{
-							uint8_t year = char2int(cmd->payload, cmd->len);
-							date.Year = year;
-							if (!rtc_validate(NULL, &date))
-							{
-								rtc_configure_date(&date);
-								xQueueSend(queue_print, &msg_conf, portMAX_DELAY);
-								rtc_show_time_date_serial();
-							}else
-								xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
-							curr_state = sMainMenu;
-							rtc_state = 0;
-							break;
-						}
-					}
-					break;
-				}
-				case sRtcReport:{
-					//Enable or disable RTC current time reporting over ITM
-					if (cmd->len == 1)
-					{
-						if(cmd->payload[0] == 'y'){
-							if(xTimerIsTimerActive(timer_rtc) == pdFALSE)
-								xTimerStart(timer_rtc, portMAX_DELAY);
-						}
-						else if (cmd->payload[0] == 'n')
-							xTimerStop(timer_rtc, portMAX_DELAY);
-						else
-							xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
-					}else
-						xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
-
+				else
+				{
 					curr_state = sMainMenu;
+					xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
+				}
+				break;
+			}
+			case sRtcTimeConfig: {
+				/*get hh, mm, ss infor and configure RTC */
+				/*take care of invalid entries */
+				switch (rtc_state)
+				{
+				case HH_CONFIG: {
+					uint8_t hour = char2int(cmd->payload, cmd->len);
+					time.Hours = hour;
+					rtc_state = MM_CONFIG;
+					xQueueSend(queue_print, &msg_rtc_mm, portMAX_DELAY);
 					break;
 				}
+				case MM_CONFIG: {
+					uint8_t min = char2int(cmd->payload, cmd->len);
+					time.Minutes = min;
+					rtc_state = SS_CONFIG;
+					xQueueSend(queue_print, &msg_rtc_ss, portMAX_DELAY);
+					break;
+				}
+				case SS_CONFIG: {
+					uint8_t sec = char2int(cmd->payload, cmd->len);
+					time.Seconds = sec;
+					if (!rtc_validate(&time, NULL))
+							{
+						rtc_configure_time(&time);
+						xQueueSend(queue_print, &msg_conf, portMAX_DELAY);
+						rtc_show_time_date_serial();
+					} else
+						xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
+					curr_state = sMainMenu;
+					rtc_state = 0;
+					break;
+				}
+				}
+				break;
+			}
+			case sRtcDateConfig: {
+				/*get date, month, day , year info and configure RTC */
+				/*take care of invalid entries */
+				switch (rtc_state) {
+				case DATE_CONFIG: {
+					uint8_t d = char2int(cmd->payload, cmd->len);
+					date.Date = d;
+					rtc_state = MONTH_CONFIG;
+					xQueueSend(queue_print, &msg_rtc_mo, portMAX_DELAY);
+					break;
+				}
+				case MONTH_CONFIG: {
+					uint8_t month = char2int(cmd->payload, cmd->len);
+					date.Month = month;
+					rtc_state = DAY_CONFIG;
+					xQueueSend(queue_print, &msg_rtc_dow, portMAX_DELAY);
+					break;
+				}
+				case DAY_CONFIG: {
+					uint8_t day = char2int(cmd->payload, cmd->len);
+					date.WeekDay = day;
+					rtc_state = YEAR_CONFIG;
+					xQueueSend(queue_print, &msg_rtc_yr, portMAX_DELAY);
+					break;
+				}
+				case YEAR_CONFIG: {
+					uint8_t year = char2int(cmd->payload, cmd->len);
+					date.Year = year;
+					if (!rtc_validate(NULL, &date))
+							{
+						rtc_configure_date(&date);
+						xQueueSend(queue_print, &msg_conf, portMAX_DELAY);
+						rtc_show_time_date_serial();
+					} else
+						xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
+					curr_state = sMainMenu;
+					rtc_state = 0;
+					break;
+				}
+				}
+				break;
+			}
+			case sRtcReport: {
+				//Enable or disable RTC current time reporting over ITM
+				if (cmd->len == 1)
+						{
+					if (cmd->payload[0] == 'y') {
+						if (xTimerIsTimerActive(timer_rtc) == pdFALSE)
+							xTimerStart(timer_rtc, portMAX_DELAY);
+					}
+					else if (cmd->payload[0] == 'n')
+						xTimerStop(timer_rtc, portMAX_DELAY);
+					else
+						xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
+				} else
+					xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
+
+				curr_state = sMainMenu;
+				break;
+			}
 			}
 		}
 		/*Notify menu task */
-		xTaskNotify(task_menu,0,eNoAction);
+		xTaskNotify(task_menu, 0, eNoAction);
 	}
 }
 
@@ -394,7 +414,7 @@ void Task_Command(void *argument)
 	BaseType_t flag;
 	command_t cmd;
 
-	while(1)
+	while (1)
 	{
 		flag = xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
 
@@ -404,48 +424,49 @@ void Task_Command(void *argument)
 	}
 }
 
-void process_command(command_t* cmd)
+void process_command(command_t *cmd)
 {
 	extract_command(cmd);
 	switch (curr_state) {
-		case sMainMenu:
-			xTaskNotify(task_menu, (uint32_t) cmd, eSetValueWithOverwrite);
-			break;
-		case sLedEffect:
-			xTaskNotify(task_led, (uint32_t) cmd, eSetValueWithOverwrite);
-			break;
-		case sRtcMenu:
+	case sMainMenu:
+		xTaskNotify(task_menu, (uint32_t ) cmd, eSetValueWithOverwrite);
+		break;
+	case sLedEffect:
+		xTaskNotify(task_led, (uint32_t ) cmd, eSetValueWithOverwrite);
+		break;
+	case sRtcMenu:
 		case sRtcReport:
 		case sRtcDateConfig:
 		case sRtcTimeConfig:
-			xTaskNotify(task_rtc, (uint32_t) cmd, eSetValueWithOverwrite);
-			break;
+		xTaskNotify(task_rtc, (uint32_t ) cmd, eSetValueWithOverwrite);
+		break;
 	}
 }
 
-int extract_command(command_t* cmd)
+int extract_command(command_t *cmd)
 {
 	uint8_t item;
 	BaseType_t status;
 
 	//Check if any message in the queue
 	status = uxQueueMessagesWaiting(queue_data);
-	if(status == 0) return -1;
+	if (status == 0)
+		return -1;
 
 	uint8_t i = 0;
 
 	do
 	{
 		status = xQueueReceive(queue_data, &item, 0);
-		if (status == pdTRUE) cmd->payload[i++] = item;
-	}while(item != '\n');
+		if (status == pdTRUE)
+			cmd->payload[i++] = item;
+	} while (item != '\n');
 
-	cmd->payload[i-1] = '\0'; //replace \n with null character
-	cmd->len = i-1; //save length of command excluding null
+	cmd->payload[i - 1] = '\0'; //replace \n with null character
+	cmd->len = i - 1; //save length of command excluding null
 
 	return 0;
 }
-
 
 static uint8_t char2int(uint8_t *p, int len)
 {
