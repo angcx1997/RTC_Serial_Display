@@ -581,8 +581,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	uint8_t dummy;
 
+
 	if (!xQueueIsQueueFullFromISR(queue_data))
-			{
+	{
 		//Enqueue data type
 		xQueueSendFromISR(queue_data, (void* )&user_ser_input, NULL);
 	}

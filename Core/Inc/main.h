@@ -78,7 +78,7 @@ void Task_Led(void *argument);
 void Task_Print(void *argument);
 void Task_RTC(void* argument);
 void Task_Command(void *argument);
-
+void SystemClock_Config(void);
 
 
 /* USER CODE END EFP */

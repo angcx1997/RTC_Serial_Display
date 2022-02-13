@@ -99,7 +99,7 @@ void vApplicationIdleHook(void)
 	 memory allocated by the kernel to any task that has since been deleted. */
 
 	//send the cpu to normal sleep
-//	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 	printf("IDLE mode\r\n");
 
 }
@@ -119,13 +119,23 @@ void Task_Menu(void *argument)
 			"========================\n"
 			"LED effect    -------> 0\n"
 			"Date and time -------> 1\n"
-			"Exit          -------> 2\n"
+			"Sleep         -------> 2\n"
+			"Exit          -------> 3\n"
 			"Enter your choice here : ";
 
 	const char *exit_menu = "\n"
 				"========================\n"
 				"| MCU  is in standby   |\n"
 				"========================\n";
+
+	const char *sleep_menu = "\n"
+					"========================\n"
+					"|   MCU  is in sleep   |\n"
+					"========================\n";
+	const char *wkup_menu = "\n"
+						"========================\n"
+						"|   MCU  is in wake   |\n"
+						"========================\n";
 
 	while (1)
 	{
@@ -151,6 +161,25 @@ void Task_Menu(void *argument)
 				xTaskNotify(task_rtc, 0, eNoAction);
 				break;
 			case 2:
+				//Implement stop
+				HAL_UART_Transmit(&huart3, (uint8_t*) sleep_menu, strlen((char*) sleep_menu), HAL_MAX_DELAY);
+				/* Suspend the Ticks before entering the STOP mode or else this can wake the device up */
+				vTaskSuspendAll();
+				__HAL_RTC_TAMPER_CLEAR_FLAG(&hrtc, RTC_FLAG_TAMP1F|RTC_FLAG_TSF);
+				__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
+				__disable_irq();
+				HAL_SuspendTick();
+				//Sleep until any ISR
+				HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+				SystemClock_Config();
+				HAL_ResumeTick();
+				HAL_UART_Transmit(&huart3, (uint8_t*) wkup_menu, strlen((char*) wkup_menu), HAL_MAX_DELAY);
+				__enable_irq();
+				xTaskResumeAll();
+				printf("Enter sleep mode\r\n");
+				break;
+
+			case 3:
 				//Implement quit
 				/** Now enter the standby mode **/
 				/* clear tamper flag */
@@ -200,7 +229,7 @@ void Task_Led(void *argument)
 		cmd = (command_t*) cmd_addr;
 
 		if (cmd->len <= 4)
-				{
+		{
 			if (!strcmp((char*) cmd->payload, "none"))
 				led_effect_stop();
 			else if (!strcmp((char*) cmd->payload, "e1"))
