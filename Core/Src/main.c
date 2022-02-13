@@ -126,6 +126,13 @@ int main(void)
 	/* USER CODE BEGIN 2 */
 
 	HAL_UART_Receive_IT(&huart3, (uint8_t*) &user_ser_input, 1);
+
+	//If MCU has been in standby mode
+	if (__HAL_PWR_GET_FLAG(PWR_FLAG_SB) != RESET)
+	{
+		__HAL_PWR_CLEAR_FLAG(PWR_FLAG_SB);
+		printf("Wake up from standby mode");
+	}
 	/* USER CODE END 2 */
 
 	/* Init scheduler */

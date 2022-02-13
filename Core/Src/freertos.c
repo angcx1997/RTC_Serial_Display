@@ -65,6 +65,7 @@ extern QueueHandle_t queue_print;
 extern QueueHandle_t queue_data;
 
 extern UART_HandleTypeDef huart3;
+extern RTC_HandleTypeDef hrtc;
 //software timer handles
 extern TimerHandle_t timer_led[4];
 extern TimerHandle_t timer_rtc;
@@ -98,7 +99,8 @@ void vApplicationIdleHook(void)
 	 memory allocated by the kernel to any task that has since been deleted. */
 
 	//send the cpu to normal sleep
-	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+//	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+	printf("IDLE mode\r\n");
 
 }
 /* USER CODE END 2 */
@@ -119,6 +121,11 @@ void Task_Menu(void *argument)
 			"Date and time -------> 1\n"
 			"Exit          -------> 2\n"
 			"Enter your choice here : ";
+
+	const char *exit_menu = "\n"
+				"========================\n"
+				"| MCU  is in standby   |\n"
+				"========================\n";
 
 	while (1)
 	{
@@ -145,9 +152,14 @@ void Task_Menu(void *argument)
 				break;
 			case 2:
 				//Implement quit
-
+				/** Now enter the standby mode **/
+				/* clear tamper flag */
+				__HAL_RTC_TAMPER_CLEAR_FLAG(&hrtc, RTC_FLAG_TAMP1F|RTC_FLAG_TSF);
+				/*clear pwr wakeup flag*/
+				__HAL_PWR_CLEAR_FLAG(PWR_FLAG_WU);
 				printf("Enter Standby mode\r\n");
-				HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
+				HAL_UART_Transmit(&huart3, (uint8_t*) exit_menu, strlen((char*) exit_menu), HAL_MAX_DELAY);
+				HAL_PWR_EnterSTANDBYMode();
 				break;
 			default:
 				xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
