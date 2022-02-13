@@ -263,6 +263,7 @@ static void MX_RTC_Init(void)
 
 	RTC_TimeTypeDef sTime = { 0 };
 	RTC_DateTypeDef sDate = { 0 };
+	RTC_TamperTypeDef sTamper = { 0 };
 
 	/* USER CODE BEGIN RTC_Init 1 */
 
@@ -302,6 +303,20 @@ static void MX_RTC_Init(void)
 	sDate.Year = 0x0;
 
 	if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+			{
+		Error_Handler();
+	}
+	/** Enable the RTC Tamper 1
+	 */
+	sTamper.Tamper = RTC_TAMPER_1;
+	sTamper.PinSelection = RTC_TAMPERPIN_DEFAULT;
+	sTamper.Trigger = RTC_TAMPERTRIGGER_RISINGEDGE;
+	sTamper.Filter = RTC_TAMPERFILTER_DISABLE;
+	sTamper.SamplingFrequency = RTC_TAMPERSAMPLINGFREQ_RTCCLK_DIV32768;
+	sTamper.PrechargeDuration = RTC_TAMPERPRECHARGEDURATION_1RTCCLK;
+	sTamper.TamperPullUp = RTC_TAMPER_PULLUP_ENABLE;
+	sTamper.TimeStampOnTamperDetection = RTC_TIMESTAMPONTAMPERDETECTION_ENABLE;
+	if (HAL_RTCEx_SetTamper_IT(&hrtc, &sTamper) != HAL_OK)
 			{
 		Error_Handler();
 	}
@@ -399,12 +414,6 @@ static void MX_GPIO_Init(void)
 	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
-	/*Configure GPIO pin : USER_Btn_Pin */
-	GPIO_InitStruct.Pin = USER_Btn_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_EVT_FALLING;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : PF0 PF1 PF2 PF3
 	 PF4 PF5 PF6 PF7

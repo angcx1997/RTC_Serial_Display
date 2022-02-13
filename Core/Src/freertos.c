@@ -98,7 +98,8 @@ void vApplicationIdleHook(void)
 	 memory allocated by the kernel to any task that has since been deleted. */
 
 	//send the cpu to normal sleep
-	__WFI();
+	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+
 }
 /* USER CODE END 2 */
 
@@ -144,6 +145,9 @@ void Task_Menu(void *argument)
 				break;
 			case 2:
 				//Implement quit
+
+				printf("Enter Standby mode\r\n");
+				HAL_PWR_EnableWakeUpPin(PWR_WAKEUP_PIN1);
 				break;
 			default:
 				xQueueSend(queue_print, &msg_inv, portMAX_DELAY);
@@ -219,6 +223,7 @@ void Task_Print(void *argument)
 				{
 			Error_Handler();
 		}
+		vTaskDelay(pdMS_TO_TICKS(1));
 	}
 }
 

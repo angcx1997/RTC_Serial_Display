@@ -55,6 +55,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern RTC_HandleTypeDef hrtc;
 extern DMA_HandleTypeDef hdma_usart3_tx;
 extern DMA_HandleTypeDef hdma_usart3_rx;
 extern UART_HandleTypeDef huart3;
@@ -161,6 +162,20 @@ void DebugMon_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32f4xx.s).                    */
 /******************************************************************************/
+
+/**
+  * @brief This function handles RTC tamper and timestamp interrupts through EXTI line 21.
+  */
+void TAMP_STAMP_IRQHandler(void)
+{
+  /* USER CODE BEGIN TAMP_STAMP_IRQn 0 */
+
+  /* USER CODE END TAMP_STAMP_IRQn 0 */
+  HAL_RTCEx_TamperTimeStampIRQHandler(&hrtc);
+  /* USER CODE BEGIN TAMP_STAMP_IRQn 1 */
+
+  /* USER CODE END TAMP_STAMP_IRQn 1 */
+}
 
 /**
   * @brief This function handles DMA1 stream1 global interrupt.
