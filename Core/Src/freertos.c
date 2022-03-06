@@ -100,8 +100,6 @@ void vApplicationIdleHook(void)
 
 	//send the cpu to normal sleep
 	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
-	printf("IDLE mode\r\n");
-
 }
 /* USER CODE END 2 */
 
